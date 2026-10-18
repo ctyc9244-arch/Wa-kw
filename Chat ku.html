@@ -1,0 +1,999 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d14">
+<title>Chat Kode</title>
+<style>
+:root{--bg:#0b0d14;--panel:#151822;--panel2:#1d2130;--line:#2a2f42;--text:#f2f3f7;--muted:#9096ab;--accent:#22c55e;--danger:#ff6b6b}
+*{box-sizing:border-box}html{color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+button,input{font:inherit;color:inherit}
+input{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px 12px;width:100%}
+.btn{background:var(--accent);color:#06290f;border:none;border-radius:10px;padding:11px 14px;font-weight:600;width:100%}
+.btn.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+.screen{max-width:480px;margin:0 auto;padding:18px;min-height:100vh;display:flex;flex-direction:column}
+.center{display:flex;flex-direction:column;justify-content:center;flex:1;gap:12px}
+.logo{height:54px;width:54px;border-radius:16px;background:var(--accent);display:grid;place-items:center;font-size:24px;margin:0 auto 6px;color:#06290f}
+h2{text-align:center;margin:0 0 2px}
+.sub{text-align:center;color:var(--muted);font-size:13px;margin:0 0 14px}
+.field label{font-size:12px;color:var(--muted);display:block;margin:0 0 5px}
+.field{margin-bottom:12px}
+.err{color:var(--danger);font-size:13px;min-height:18px}
+.topbar{display:flex;align-items:center;gap:10px;padding:4px 0 14px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--panel2);display:grid;place-items:center;font-weight:600;font-size:13px;flex:0 0 36px}
+.row{display:flex;align-items:center;gap:10px}
+.iconbtn{background:none;border:none;font-size:18px;padding:6px;width:auto}
+.contact{display:flex;align-items:center;gap:12px;padding:12px 6px;border-bottom:1px solid var(--line);cursor:pointer}
+.contact b{font-size:15px}.contact span{font-size:12px;color:var(--muted)}
+.addbox{display:flex;gap:8px;margin:10px 0}
+.addbox input{flex:1}.addbox button{width:auto;padding:11px 16px}
+.chatwrap{display:flex;flex-direction:column;flex:1;min-height:0}
+.msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:8px 2px}
+.bub{max-width:76%;padding:9px 12px;border-radius:14px;font-size:14px;line-height:1.4;word-wrap:break-word}
+.me{align-self:flex-end;background:var(--accent);color:#06290f;border-bottom-right-radius:4px}
+.them{align-self:flex-start;background:var(--panel2);border-bottom-left-radius:4px}
+.ts{font-size:10px;opacity:.65;margin-top:3px;display:block}
+.bub.me{cursor:default}
+.meta{display:flex;align-items:center;justify-content:flex-end;gap:6px;opacity:.9}
+.delb{background:none;border:0;padding:0 2px;margin:0;font-size:12px;line-height:1;color:inherit;cursor:pointer}
+.delb.armed{background:var(--danger);color:#fff;border-radius:8px;padding:2px 7px;font-size:10px;font-weight:700}
+.chk{font-size:12px;font-weight:700;letter-spacing:-2px;margin-right:2px}
+.chk.rd{color:#4fc3f7}
+.gmrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.gmrow:last-child{border-bottom:0}
+.dot2{width:10px;height:10px;border-radius:50%;background:#5b6178;flex:none}
+.dot2.on{background:var(--accent)}
+.gmn{flex:1;font-size:14px}
+.gmt{font-size:11px;color:var(--muted)}
+.composer{display:flex;gap:8px;padding-top:10px}
+.composer input{flex:1}.composer button{width:auto;padding:0 16px}
+.empty{text-align:center;color:var(--muted);font-size:13px;margin-top:30px}
+.badge{background:var(--accent);color:#06290f;font-size:11px;font-weight:700;border-radius:999px;min-width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;margin-left:auto}
+.contact{position:relative}
+.cactions{display:flex;gap:4px;margin-left:6px}
+.ibtn{background:var(--panel2);border:1px solid var(--line);border-radius:8px;width:30px;height:30px;font-size:13px;display:grid;place-items:center;padding:0;flex:0 0 auto}
+.blkrow{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line)}
+.blkrow .btn{width:auto;padding:7px 10px;font-size:12px}
+.bub.me{cursor:pointer}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:10px 16px;border-radius:12px;font-size:13px;z-index:9;opacity:0;pointer-events:none;transition:opacity .25s;max-width:88vw}
+.toast.show{opacity:1}
+.overlay{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;padding:18px;z-index:5}
+.overlay.show{display:flex}
+.modal{max-height:90vh;overflow-y:auto;width:min(380px,100%);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px}
+.modal h3{margin:0 0 10px}
+.notice{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px;font-size:13px;color:var(--muted);line-height:1.6}
+.avatar{position:relative}
+.dot{position:absolute;right:-2px;bottom:-2px;width:12px;height:12px;border-radius:50%;background:#5b6178;border:2px solid var(--bg)}
+.dot.on{background:var(--accent);box-shadow:0 0 0 2px #22c55e33}
+.st{color:var(--muted)}.st.on{color:var(--accent);font-weight:600}
+input[type=checkbox]{width:18px;height:18px;padding:0;accent-color:var(--accent);flex:0 0 18px}
+.toggle{display:flex;align-items:center;gap:10px;font-size:13px;margin:0 0 14px;cursor:pointer}
+.contact .nk{color:var(--accent);font-size:12px}
+.sect{font-size:12px;color:var(--muted);margin:12px 2px 6px}
+.toggle.pick{margin:0 0 10px}.toggle.pick small{color:var(--muted)}
+.bub .who{display:block;font-size:11px;font-weight:700;color:var(--accent);margin-bottom:2px}
+.nkrow{padding:6px 0;border-bottom:1px solid var(--line);color:var(--text)}.nkrow:last-child{border:none}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+
+<div class="screen" id="loadingScreen"><div class="center"><p class="sub">Memuat...</p></div></div>
+
+<div class="screen hidden" id="blockedScreen"><div class="center">
+  <div class="logo">💬</div><h2>Chat Kode</h2>
+  <div class="notice" id="blockedMsg"></div>
+</div></div>
+
+<div class="screen hidden" id="authScreen">
+  <div class="center">
+    <div class="logo">💬</div>
+    <h2 style="text-align:center">Chat Kode</h2>
+    <p class="sub">Masuk pakai kode, atau buat kode baru kalau belum punya.</p>
+    <div class="field"><label for="authCode">Kode (contoh: 8880)</label><input id="authCode" inputmode="numeric" maxlength="12" placeholder="8880"></div>
+    <div class="field"><label for="authPin">Sandi (4–8 angka)</label><input id="authPin" type="password" inputmode="numeric" maxlength="8" placeholder="0009"></div>
+    <div class="err" id="authErr"></div>
+    <button class="btn" id="authGo">Lanjut</button>
+    <p class="sub" style="margin-top:14px">Kode belum dipakai? Otomatis dibuat sebagai akun barumu.</p>
+  </div>
+</div>
+
+<div class="screen hidden" id="appScreen">
+  <div class="topbar">
+    <div class="avatar" id="meAvatar">?</div>
+    <div class="row" style="flex:1;justify-content:space-between">
+      <div><b id="meName" style="font-size:14px"></b><div class="sub" style="margin:0;text-align:left" id="meCode"></div></div>
+      <button class="iconbtn" id="settingsBtn" aria-label="Pengaturan" title="Pengaturan">⚙</button>
+    </div>
+  </div>
+  <div class="addbox"><input id="addCodeInput" placeholder="Tambah kontak pakai kode..." inputmode="numeric"><button class="btn secondary" id="addCodeBtn">+ Tambah</button></div>
+  <div id="contactErr" class="err"></div>
+  <div id="groupList"></div>
+  <div id="contactList"></div>
+  <p class="empty hidden" id="emptyContacts">Belum ada kontak. Tambahkan pakai kode temanmu.</p>
+  <button class="btn secondary" id="openBlocked" style="margin-top:12px">🚫 Kontak diblokir (<span id="blockedCount">0</span>)</button>
+</div>
+
+<div class="overlay" id="blockedListOverlay"><div class="modal">
+  <h3>Kontak diblokir</h3>
+  <div id="blockedList"></div>
+  <p class="empty hidden" id="emptyBlocked">Tidak ada kontak yang diblokir.</p>
+  <button class="btn" id="closeBlocked" style="margin-top:14px">Tutup</button>
+</div></div>
+
+<div class="overlay" id="editContactOverlay"><div class="modal">
+  <h3>Ganti nama kontak</h3>
+  <div class="field"><label for="editContactName">Nama tampilan untukmu</label><input id="editContactName" maxlength="40"></div>
+  <div class="err" id="editContactErr"></div>
+  <div style="display:flex;gap:8px"><button class="btn secondary" id="cancelEditContact" style="flex:1">Batal</button><button class="btn" id="saveEditContact" style="flex:1">Simpan</button></div>
+</div></div>
+
+<div class="screen hidden" id="chatScreen">
+  <div class="topbar">
+    <button class="iconbtn" id="backBtn" aria-label="Kembali">←</button>
+    <div class="avatar" id="chatAvatar" style="cursor:pointer">?</div>
+    <div><b id="chatName" style="font-size:14px"></b><div class="sub" style="margin:0;text-align:left" id="chatCode"></div></div>
+    <button class="iconbtn hidden" id="addMemberBtn" aria-label="Tambah anggota" title="Tambah anggota" style="margin-left:auto"><svg viewBox="0 0 26 24" width="28" height="26" fill="#ff8a1f" aria-hidden="true"><circle cx="9" cy="8" r="4.2"/><path d="M1.5 21c0-4.2 3.4-6.8 7.5-6.8s7.5 2.6 7.5 6.8z"/><path d="M20 4.5h2V8h3.5v2H22v3.5h-2V10h-3.5V8H20z"/></svg></button>
+  </div>
+  <div class="chatwrap">
+    <div class="msgs" id="msgs"></div>
+    <div class="composer"><input id="msgInput" placeholder="Tulis pesan..."><button class="btn" id="sendBtn">Kirim</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="settingsOverlay"><div class="modal">
+  <h3>Pengaturan</h3>
+  <div class="field"><label for="newName">Nama tampilan</label><input id="newName"></div>
+  <button class="btn secondary" id="saveName" style="margin-bottom:14px">Simpan nama</button>
+  <label class="toggle"><input type="checkbox" id="showStatus"><span>Tampilkan status online saya ke kontak</span></label>
+  <div class="field"><label>Nama yang diberikan kontak untukmu</label><div class="notice" id="nickList">Belum ada kontak yang memberi namamu.</div></div>
+  <button class="btn secondary" id="notifBtn" style="margin-bottom:14px">🔔 Aktifkan notifikasi</button>
+  <div style="border-top:1px solid var(--line);margin:4px 0 14px"></div>
+  <div class="field"><label for="curPin2">Sandi saat ini</label><input id="curPin2" type="password" inputmode="numeric" maxlength="8"></div>
+  <div class="field"><label for="newPin2">Sandi baru</label><input id="newPin2" type="password" inputmode="numeric" maxlength="8"></div>
+  <button class="btn secondary" id="savePin2" style="margin-bottom:6px">Ganti sandi</button>
+  <div class="err" id="settingsErr"></div>
+  <button class="btn secondary" id="logoutBtn" style="margin-top:10px">Keluar dari perangkat ini</button>
+  <button class="btn" id="closeSettings" style="margin-top:10px">Tutup</button>
+  <button class="btn secondary" id="renameFriendBtn" style="margin-top:10px">✏ Ubah nama teman</button>
+  <button class="btn secondary" id="createGroupBtn" style="margin-top:10px">👥 Buat grup</button>
+</div></div>
+
+<div class="overlay" id="groupOverlay"><div class="modal">
+  <h3>Buat grup</h3>
+  <div class="field"><label for="gName">Nama grup</label><input id="gName" maxlength="40" placeholder="Contoh: Squad"></div>
+  <div class="field"><label for="gBio">Bio grup (boleh dikosongkan)</label><input id="gBio" maxlength="120" placeholder="Tentang grup ini"></div>
+  <div class="field"><label>Tambah anggota</label>
+    <div class="sub" id="gCount" style="text-align:left;margin:0 0 8px"></div>
+    <div id="gPick" style="max-height:200px;overflow-y:auto"></div>
+    <p class="empty hidden" id="gEmpty">Belum ada kontak. Tambahkan kontak dulu.</p>
+  </div>
+  <div class="err" id="gErr"></div>
+  <div style="display:flex;gap:8px"><button class="btn secondary" id="gCancel" style="flex:1">Batal</button><button class="btn" id="gCreate" style="flex:1">Buat grup</button></div>
+</div></div>
+
+<div class="overlay" id="groupInfoOverlay"><div class="modal">
+  <div style="text-align:center"><div class="avatar" style="width:72px;height:72px;font-size:32px;margin:0 auto 8px">👥</div>
+  <h3 id="giName" style="margin:0"></h3><div class="sub" id="giCount" style="margin:4px 0 12px"></div></div>
+  <div id="giView">
+    <div class="field"><label>Bio grup</label><div class="notice" id="giBio"></div></div>
+    <div class="field"><label>Anggota</label><div id="giMembers" style="max-height:200px;overflow-y:auto"></div></div>
+    <button class="btn secondary hidden" id="giRename" style="margin-bottom:10px">✏ Ganti nama grup</button>
+  </div>
+  <div id="giEdit" class="hidden">
+    <div class="field"><label for="giNameInput">Nama grup baru</label><input id="giNameInput" maxlength="40"></div>
+    <div style="display:flex;gap:8px;margin-bottom:10px"><button class="btn secondary" id="giEditCancel" style="flex:1">Batal</button><button class="btn" id="giEditSave" style="flex:1">Simpan nama</button></div>
+  </div>
+  <div class="err" id="giErr"></div>
+  <button class="btn secondary" id="giLeave" style="margin-bottom:10px">🚪 Keluar dari grup</button>
+  <button class="btn hidden" id="giDisband" style="margin-bottom:10px;background:var(--danger);color:#fff">🗑 Bubarkan grup</button>
+  <button class="btn" id="giClose">Tutup</button>
+</div></div>
+
+<div class="overlay" id="addMemberOverlay"><div class="modal">
+  <h3>Tambah anggota</h3>
+  <div class="sub" id="amCount" style="text-align:left;margin:0 0 8px"></div>
+  <div id="amList" style="max-height:260px;overflow-y:auto"></div>
+  <p class="empty hidden" id="amEmpty">Semua kontakmu sudah ada di grup ini.</p>
+  <div class="err" id="amErr"></div>
+  <div style="display:flex;gap:8px;margin-top:10px"><button class="btn secondary" id="amCancel" style="flex:1">Batal</button><button class="btn" id="amAdd" style="flex:1">Tambah</button></div>
+</div></div>
+
+<div class="overlay" id="groupInfoOverlay"><div class="modal">
+  <div style="text-align:center"><div class="avatar" style="width:64px;height:64px;flex-basis:64px;margin:0 auto 8px;font-size:30px">👥</div><b id="giName" style="font-size:17px"></b><div class="sub" id="giMeta" style="margin:4px 0 12px"></div></div>
+  <div class="field"><label>Bio grup</label><div class="notice" id="giBio"></div></div>
+  <div id="giRename" class="hidden"><div class="field"><label for="giNameInput">Ganti nama grup</label><div style="display:flex;gap:8px"><input id="giNameInput" maxlength="40"><button class="btn secondary" id="giSaveName" style="width:auto;padding:0 14px">Simpan</button></div></div></div>
+  <div class="field"><label>Anggota</label><div id="giMembers"></div></div>
+  <div class="err" id="giErr"></div>
+  <button class="btn secondary" id="giLeave" style="margin-bottom:8px">🚪 Keluar dari grup</button>
+  <button class="btn hidden" id="giDissolve" style="background:var(--danger);color:#fff;margin-bottom:8px">🗑 Bubarkan grup</button>
+  <button class="btn secondary" id="giClose">Tutup</button>
+</div></div>
+
+<div class="overlay" id="friendRenameOverlay"><div class="modal">
+  <h3>Ubah nama teman</h3>
+  <div id="frPick">
+    <p class="sub" style="text-align:left">Pilih teman dari daftar:</p>
+    <div id="frList"></div>
+    <p class="empty hidden" id="frEmpty">Belum ada teman. Tambahkan kontak dulu.</p>
+  </div>
+  <div id="frEdit" class="hidden">
+    <div class="field"><label for="frName">Masukkan nama baru untuk <b id="frWho"></b></label><input id="frName" maxlength="40"></div>
+    <div class="err" id="frErr"></div>
+    <div style="display:flex;gap:8px"><button class="btn secondary" id="frBack" style="flex:1">Kembali</button><button class="btn" id="frSave" style="flex:1">Simpan nama</button></div>
+  </div>
+  <button class="btn secondary" id="frClose" style="margin-top:14px">Tutup</button>
+</div></div>
+
+<div class="toast" id="toast"></div>
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var myId=null, myCode=null, db=null, user=null, canWrite=false;
+  var DEVICE_KEY='chatkode_device_v1';
+  var curContacts={}, chatUnsub=null, contactsUnsub=null, watchers=[], lastSeen={}, lastMsgId={}, activeChatCode=null, toastT=null;
+  var SEEN_KEY='chatkode_seen_v1';
+  try{lastSeen=JSON.parse(localStorage.getItem(SEEN_KEY)||'{}')||{}}catch(e){lastSeen={}}
+  function saveSeen(){try{localStorage.setItem(SEEN_KEY,JSON.stringify(lastSeen))}catch(e){}}
+  function toast(msg){var t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('show')},3200);}
+
+  function show(id){['loadingScreen','blockedScreen','authScreen','appScreen','chatScreen'].forEach(function(s){$(s).classList.toggle('hidden',s!==id)});}
+  function initials(s){return (s||'?').trim().slice(0,2).toUpperCase();}
+  function esc(s){var d=document.createElement('div');d.textContent=s==null?'':String(s);return d.innerHTML;}
+
+  function newSalt(){try{return Array.from(crypto.getRandomValues(new Uint8Array(8))).map(function(x){return x.toString(16).padStart(2,'0')}).join('')}catch(e){return Math.random().toString(36).slice(2)+Date.now().toString(36)}}
+  async function hashPin(pin,salt){
+    var d=salt+':'+pin;
+    try{if(crypto&&crypto.subtle){var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(d));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');}}catch(e){}
+    var h=5381;for(var r=0;r<2000;r++)for(var i=0;i<d.length;i++)h=((h<<5)+h+d.charCodeAt(i)+r)|0;return 'f'+(h>>>0).toString(16);
+  }
+
+  async function boot(){
+    if(!window.claude||!window.claude.use){blockedMsg('Fitur ini perlu dibuka lewat claude.ai, bukan file lokal.');return;}
+    user=await window.claude.use('user');
+    db=await window.claude.use('db');
+    if(!user||!db){blockedMsg('Chat Kode belum diaktifkan untuk tampilan ini. Minta pemilik artifact membagikannya lewat menu Bagikan, lalu buka lagi link ini.');return;}
+    myId=await user.id();
+    if(!myId){blockedMsg('Kamu perlu masuk ke akun Claude dulu untuk memakai Chat Kode.');return;}
+    var can=await user.can('data.write');
+    canWrite=can!==false;
+    if(!canWrite){blockedMsg('Kamu bisa melihat, tapi belum bisa mengirim pesan di sini. Minta pemilik artifact ini mengundangmu sebagai Kontributor atau Editor lewat menu Bagikan.');return;}
+    var dev=null;try{dev=JSON.parse(localStorage.getItem(DEVICE_KEY)||'null')}catch(e){}
+    if(dev&&dev.code){
+      var snap=await db.doc('directory/'+dev.code).get();
+      if(snap.exists&&snap.data().ownerId===myId){enterApp(dev.code);return;}
+    }
+    show('authScreen');
+  }
+  function blockedMsg(t){$('blockedMsg').textContent=t;show('blockedScreen');}
+
+  $('authGo').onclick=async function(){
+    var code=($('authCode').value||'').trim();
+    var pin=($('authPin').value||'').trim();
+    $('authErr').textContent='';
+    if(!/^[A-Za-z0-9]{3,12}$/.test(code)){$('authErr').textContent='Kode 3-12 huruf/angka, tanpa spasi.';return;}
+    if(!/^\d{4,8}$/.test(pin)){$('authErr').textContent='Sandi harus 4-8 angka.';return;}
+    $('authGo').disabled=true;
+    try{
+      var ref=db.doc('directory/'+code);
+      var snap=await ref.get();
+      if(snap.exists&&snap.data().ownerId){
+        var d=snap.data();
+        var h=await hashPin(pin,d.salt);
+        if(h!==d.hash){$('authErr').textContent='Sandi salah untuk kode ini.';$('authGo').disabled=false;return;}
+        localStorage.setItem(DEVICE_KEY,JSON.stringify({code:code}));
+        enterApp(code);
+      }else{
+        var lease=await ref.acquire({holder:myId,ttlMs:6000});
+        if(!lease.acquired){$('authErr').textContent='Kode sedang diproses orang lain, coba lagi.';$('authGo').disabled=false;return;}
+        var check=await ref.get();
+        if(check.exists&&check.data().ownerId){$('authErr').textContent='Kode baru saja dipakai orang lain. Coba kode lain.';$('authGo').disabled=false;return;}
+        var salt=newSalt();
+        await ref.set({ownerId:myId,salt:salt,hash:await hashPin(pin,salt),name:'Pengguna '+code,createdAt:Date.now()});
+        localStorage.setItem(DEVICE_KEY,JSON.stringify({code:code}));
+        enterApp(code);
+      }
+    }catch(e){$('authErr').textContent='Gagal menyimpan: '+(e&&e.message?e.message:'coba lagi.');$('authGo').disabled=false;}
+  };
+
+  async function enterApp(code){
+    myCode=code;
+    var snap=await db.doc('directory/'+code).get();
+    var name=(snap.exists&&snap.data().name)||('Pengguna '+code);
+    $('meName').textContent=name;$('meCode').textContent='Kode: '+code;$('meAvatar').textContent=initials(name);
+    show('appScreen');
+    watchContacts();
+    startPresence();
+    watchNicknames();
+    watchGroups();
+  }
+
+  // ===== Status online / offline =====
+  var PRES_TTL=40000, HB_MS=15000, PRIV_KEY='chatkode_showstatus_v1';
+  var presence={}, hbTimer=null, uiTimer=null, presStarted=false;
+  function showStatus(){return localStorage.getItem(PRIV_KEY)!=='0';}
+  function isOnline(code){var p=presence[code];return !!(p&&p.online&&!p.hidden&&Date.now()-p.ts<PRES_TTL);}
+  function statusText(code){
+    if(isOnline(code))return 'Online';
+    var p=presence[code];
+    if(!p||!p.ts||p.hidden)return 'Offline';
+    var d=new Date(p.ts),now=new Date();
+    var t=d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+    if(d.toDateString()===now.toDateString())return 'Terakhir dilihat '+t;
+    var y=new Date(now);y.setDate(now.getDate()-1);
+    if(d.toDateString()===y.toDateString())return 'Terakhir dilihat kemarin '+t;
+    return 'Terakhir dilihat '+d.toLocaleDateString('id-ID',{day:'numeric',month:'short'})+' '+t;
+  }
+  function updatePresenceUI(code){
+    var on=isOnline(code),txt=statusText(code);
+    var dot=$('dot-'+code),st=$('st-'+code);
+    if(dot)dot.classList.toggle('on',on);
+    if(st){st.textContent=on?'Online':(txt==='Offline'?'Offline':txt.replace('Terakhir dilihat','Terakhir'));st.classList.toggle('on',on);}
+    if(activeChatCode===code){
+      var cd=$('chatDot'),cs=$('chatStatus');
+      if(cd)cd.classList.toggle('on',on);
+      if(cs){cs.textContent=txt;cs.classList.toggle('on',on);}
+    }
+  }
+  function refreshAllPresence(){Object.keys(curContacts).forEach(updatePresenceUI);}
+  function sendHeartbeat(online){
+    if(!db||!myCode)return Promise.resolve();
+    var show=showStatus();
+    var data={online:!!online&&show,hidden:!show,ts:Date.now()};
+    return db.doc('presence/'+myCode).set(data).catch(function(){});
+  }
+  function startPresence(){
+    if(presStarted)return;presStarted=true;
+    sendHeartbeat(true);
+    hbTimer=setInterval(function(){if(!document.hidden)sendHeartbeat(true);},HB_MS);
+    uiTimer=setInterval(refreshAllPresence,10000);
+    document.addEventListener('visibilitychange',function(){sendHeartbeat(!document.hidden);});
+    window.addEventListener('pagehide',function(){sendHeartbeat(false);});
+    window.addEventListener('online',function(){sendHeartbeat(true);});
+  }
+  function watchPresence(code){
+    var u=db.doc('presence/'+code).onSnapshot(function(snap){
+      presence[code]=(snap&&snap.exists)?snap.data():null;
+      updatePresenceUI(code);
+    },function(){});
+    watchers.push(u);
+    updatePresenceUI(code);
+  }
+
+  // ===== Nama yang diberikan kontak untuk kita =====
+  var nickForMe={}, nickInit=false, nickWatching=false;
+  function contactLabel(c){return (curContacts[c]&&curContacts[c].name)||('Kode '+c);}
+  function updateNick(code){var el=$('nk-'+code);if(el)el.textContent=nickForMe[code]?'Memanggilmu: '+nickForMe[code]:'';}
+  function renderNickList(){
+    var box=$('nickList');if(!box)return;box.innerHTML='';
+    var ks=Object.keys(nickForMe);
+    if(!ks.length){box.textContent='Belum ada kontak yang memberi namamu.';return;}
+    ks.forEach(function(k){var r=document.createElement('div');r.className='nkrow';r.textContent=contactLabel(k)+' (kode '+k+') → '+nickForMe[k];box.appendChild(r);});
+  }
+  function shareNick(code,n){
+    return db.doc('nicknames/'+code+'_'+myCode).set({to:code,from:myCode,nick:n,ts:Date.now()}).catch(function(){});
+  }
+  function watchNicknames(){
+    if(nickWatching)return;nickWatching=true;
+    db.collection('nicknames').where('to','==',myCode).onSnapshot(function(qs){
+      var next={},changed=[];
+      qs.docs.forEach(function(d){var m=d.data();if(!m||!m.from)return;next[m.from]=m.nick;if(nickInit&&nickForMe[m.from]!==m.nick)changed.push(m);});
+      var old=nickForMe;nickForMe=next;nickInit=true;
+      Object.keys(old).concat(Object.keys(next)).forEach(updateNick);
+      renderNickList();
+      if(changed.length){var m=changed[changed.length-1];toast(contactLabel(m.from)+' menamaimu "'+m.nick+'"');}
+    },function(){});
+  }
+
+  function myProfileDoc(){return db.doc('data/users/'+myId+'/profile');}
+
+  function watchContacts(){
+    if(contactsUnsub)contactsUnsub();
+    contactsUnsub=myProfileDoc().collection('contacts').orderBy('addedAt','desc').onSnapshot(function(qs){
+      curContacts={};
+      qs.docs.forEach(function(d){curContacts[d.id]=d.data();});
+      renderContactList();
+      renderBlockedList();
+    },function(){});
+  }
+
+  function renderContactList(){
+    var list=$('contactList');list.innerHTML='';
+    var active=Object.keys(curContacts).filter(function(c){return !curContacts[c].blocked;});
+    var blocked=Object.keys(curContacts).filter(function(c){return curContacts[c].blocked;});
+    $('emptyContacts').classList.toggle('hidden',active.length>0);
+    $('blockedCount').textContent=blocked.length;
+    watchers.forEach(function(u){u();});watchers=[];
+    var delArm=null;
+    active.forEach(function(code){
+      var c=curContacts[code];
+      var row=document.createElement('div');row.className='contact';
+      row.innerHTML='<div class="avatar">'+esc(initials(c.name))+'<span class="dot" id="dot-'+esc(code)+'"></span></div><div style="flex:1"><b>'+esc(c.name)+'</b><br><span>Kode '+esc(code)+' · <span class="st" id="st-'+esc(code)+'">Offline</span></span><br><span class="nk" id="nk-'+esc(code)+'"></span></div><span class="badge hidden" id="badge-'+esc(code)+'">0</span><div class="cactions"><button class="ibtn" title="Ganti nama" aria-label="Ganti nama">✏</button><button class="ibtn" title="Blokir" aria-label="Blokir">🚫</button><button class="ibtn" title="Hapus kontak" aria-label="Hapus kontak">🗑</button></div>';
+      row.onclick=function(){openChat(code,c.name);};
+      var btns=row.querySelectorAll('.ibtn');
+      btns[0].onclick=function(e){e.stopPropagation();openEditContact(code,c.name);};
+      btns[1].onclick=function(e){e.stopPropagation();myProfileDoc().collection('contacts').doc(code).update({blocked:true}).then(function(){if(activeChatCode===code){activeChatCode=null;if(chatUnsub){chatUnsub();chatUnsub=null;}show('appScreen');}toast(esc(c.name)+' diblokir.');}).catch(function(){toast('Gagal memblokir.');});};
+      btns[2].onclick=function(e){
+        e.stopPropagation();
+        if(delArm===code){
+          delArm=null;
+          myProfileDoc().collection('contacts').doc(code).delete().catch(function(){});
+        }else{
+          delArm=code;btns[2].style.opacity='.4';btns[2].style.background='var(--danger)';btns[2].title='Ketuk lagi untuk menghapus';
+          setTimeout(function(){if(delArm===code){delArm=null;btns[2].style.opacity='1';btns[2].style.background='';btns[2].title='Hapus kontak';}},2500);
+        }
+      };
+      list.appendChild(row);
+      watchUnread(code,c.name);
+      watchPresence(code);
+      updateNick(code);
+    });
+  }
+
+  function renderBlockedList(){
+    var list=$('blockedList');list.innerHTML='';
+    var blocked=Object.keys(curContacts).filter(function(c){return curContacts[c].blocked;});
+    $('emptyBlocked').classList.toggle('hidden',blocked.length>0);
+    var delArm=null;
+    blocked.forEach(function(code){
+      var c=curContacts[code];
+      var row=document.createElement('div');row.className='blkrow';
+      row.innerHTML='<div class="avatar">'+esc(initials(c.name))+'</div><div style="flex:1"><b>'+esc(c.name)+'</b><br><span style="font-size:12px;color:var(--muted)">Kode '+esc(code)+'</span></div>';
+      var unb=document.createElement('button');unb.className='btn secondary';unb.textContent='Buka blokir';
+      unb.onclick=function(){myProfileDoc().collection('contacts').doc(code).update({blocked:false}).then(function(){toast(esc(c.name)+' tidak diblokir lagi.');}).catch(function(){toast('Gagal membuka blokir.');});};
+      var del=document.createElement('button');del.className='btn secondary';del.textContent='Hapus';
+      del.onclick=function(){
+        if(delArm===code){delArm=null;myProfileDoc().collection('contacts').doc(code).delete().catch(function(){});}
+        else{delArm=code;del.textContent='Yakin?';setTimeout(function(){if(delArm===code){delArm=null;del.textContent='Hapus';}},2500);}
+      };
+      row.appendChild(unb);row.appendChild(del);
+      list.appendChild(row);
+    });
+  }
+
+  var editingContactCode=null;
+  function openEditContact(code,name){editingContactCode=code;$('editContactName').value=name;$('editContactErr').textContent='';$('editContactOverlay').classList.add('show');}
+  $('cancelEditContact').onclick=function(){$('editContactOverlay').classList.remove('show');};
+  $('saveEditContact').onclick=function(){
+    var n=($('editContactName').value||'').trim();
+    if(!n){$('editContactErr').textContent='Nama tidak boleh kosong.';return;}
+    myProfileDoc().collection('contacts').doc(editingContactCode).update({name:n}).then(function(){shareNick(editingContactCode,n);$('editContactOverlay').classList.remove('show');}).catch(function(){$('editContactErr').textContent='Gagal menyimpan.';});
+  };
+  $('openBlocked').onclick=function(){renderBlockedList();$('blockedListOverlay').classList.add('show');};
+  $('closeBlocked').onclick=function(){$('blockedListOverlay').classList.remove('show');};
+
+  function watchUnread(code,name){
+    var id=convId(myCode,code);
+    var u=db.collection('chats/'+id+'/messages').orderBy('ts','desc').limit(1).onSnapshot(function(qs){
+      if(qs.empty)return;
+      var d=qs.docs[0],m=d.data();
+      if(m.from===myCode)return;
+      var seen=lastSeen[id]||0;
+      var badge=$('badge-'+code);
+      if(m.ts>seen){
+        if(badge){badge.textContent='•';badge.classList.remove('hidden');}
+        if(activeChatCode===code){lastSeen[id]=m.ts;saveSeen();if(badge)badge.classList.add('hidden');if(lastMsgId[id]!==d.id)notify(name,m.text,m.ts);}
+        else if(lastMsgId[id]!==d.id){toast(esc(name)+': '+(m.text||'').slice(0,60));notify(name,m.text,m.ts);}
+      }
+      lastMsgId[id]=d.id;
+    },function(){});
+    watchers.push(u);
+  }
+
+  $('addCodeBtn').onclick=async function(){
+    var code=($('addCodeInput').value||'').trim();
+    $('contactErr').textContent='';
+    if(!code){return;}
+    if(code===myCode){$('contactErr').textContent='Itu kodemu sendiri.';return;}
+    if(curContacts[code]&&curContacts[code].blocked){$('contactErr').textContent='Kontak ini diblokir. Buka blokirnya dulu di daftar Kontak diblokir.';return;}
+    $('addCodeBtn').disabled=true;
+    try{
+      var snap=await db.doc('directory/'+code).get();
+      if(!snap.exists||!snap.data().ownerId){$('contactErr').textContent='Kode tidak ditemukan.';$('addCodeBtn').disabled=false;return;}
+      var name=snap.data().name||('Pengguna '+code);
+      await myProfileDoc().collection('contacts').doc(code).set({name:name,addedAt:Date.now()});
+      $('addCodeInput').value='';
+    }catch(e){$('contactErr').textContent='Gagal menambah kontak.';}
+    $('addCodeBtn').disabled=false;
+  };
+
+  function convId(a,b){return [a,b].sort().join('_');}
+
+  function openChat(code,name){
+    activeChatCode=code;activeGroup=null;$('addMemberBtn').classList.add('hidden');$('chatAvatar').style.cursor='';
+    $('chatName').textContent=name;$('chatCode').innerHTML='Kode '+esc(code)+' · <span class="st" id="chatStatus">Offline</span>';$('chatAvatar').textContent=initials(name);var cd=document.createElement('span');cd.className='dot';cd.id='chatDot';$('chatAvatar').appendChild(cd);updatePresenceUI(code);
+    show('chatScreen');
+    var id=convId(myCode,code);
+    var box=$('msgs');box.innerHTML='<p class="empty">Memuat pesan...</p>';
+    if(chatUnsub)chatUnsub();
+    var delArm=null;
+    chatUnsub=db.collection('chats/'+id+'/messages').orderBy('ts','asc').limit(300).onSnapshot(function(qs){
+      box.innerHTML='';
+      if(qs.empty){box.innerHTML='<p class="empty">Belum ada pesan. Mulai obrolan!</p>';}
+      var lastTs=0,inTs=0;
+      qs.docs.forEach(function(d){
+        var m=d.data();
+        if(m.ts>lastTs)lastTs=m.ts;
+        var mine=m.from===myCode;
+        if(!mine&&m.ts>inTs)inTs=m.ts;
+        var b=document.createElement('div');
+        b.className='bub '+(mine?'me':'them');
+        var t=m.ts?new Date(m.ts).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'';
+        b.appendChild(document.createTextNode(m.text||''));
+        if(mine){b.dataset.ts=m.ts;b.appendChild(metaEl(d.id,t,isRead(m,[code]),function(x){db.collection('chats/'+id+'/messages').doc(x).delete().catch(function(){});}));}
+        else b.appendChild(tsEl(t));
+        box.appendChild(b);
+      });
+      if(lastTs){lastSeen[id]=Math.max(lastSeen[id]||0,lastTs);saveSeen();}
+      markRead(id,inTs);
+      var badge=$('badge-'+code);if(badge)badge.classList.add('hidden');
+      box.scrollTop=box.scrollHeight;
+    },function(){box.innerHTML='<p class="empty">Gagal memuat pesan.</p>';});
+    watchReads(id,function(){return [code];});
+    $('msgInput').onkeydown=function(e){if(e.key==='Enter')sendMsg(code);};
+    $('sendBtn').onclick=function(){sendMsg(code);};
+  }
+
+  async function sendMsg(code){
+    var text=($('msgInput').value||'').trim();
+    if(!text)return;
+    $('msgInput').value='';
+    try{
+      await db.collection('chats/'+convId(myCode,code)+'/messages').add({from:myCode,text:text.slice(0,2000),ts:Date.now()});
+    }catch(e){$('msgInput').value=text;}
+  }
+
+  $('backBtn').onclick=function(){activeChatCode=null;activeGroup=null;pendingRead=null;if(readUnsub){readUnsub();readUnsub=null;}$('addMemberBtn').classList.add('hidden');if(chatUnsub){chatUnsub();chatUnsub=null;}show('appScreen');};
+
+  $('settingsBtn').onclick=function(){updateNotifBtn();$('showStatus').checked=showStatus();$('newName').value=$('meName').textContent;$('settingsErr').textContent='';$('settingsOverlay').classList.add('show');};
+  $('closeSettings').onclick=function(){$('settingsOverlay').classList.remove('show');};
+  $('saveName').onclick=async function(){
+    var n=($('newName').value||'').trim();
+    if(!n){$('settingsErr').textContent='Nama tidak boleh kosong.';return;}
+    await db.doc('directory/'+myCode).update({name:n});
+    $('meName').textContent=n;$('meAvatar').textContent=initials(n);$('settingsErr').textContent='Nama disimpan.';
+  };
+  $('savePin2').onclick=async function(){
+    var cur=($('curPin2').value||'').trim(),n=($('newPin2').value||'').trim();
+    $('settingsErr').textContent='';
+    if(!/^\d{4,8}$/.test(n)){$('settingsErr').textContent='Sandi baru harus 4-8 angka.';return;}
+    var ref=db.doc('directory/'+myCode);
+    var snap=await ref.get();
+    var h=await hashPin(cur,snap.data().salt);
+    if(h!==snap.data().hash){$('settingsErr').textContent='Sandi saat ini salah.';return;}
+    var salt=newSalt();
+    await ref.update({salt:salt,hash:await hashPin(n,salt)});
+    $('curPin2').value='';$('newPin2').value='';$('settingsErr').textContent='Sandi diganti.';
+  };
+  $('showStatus').onchange=function(){try{localStorage.setItem(PRIV_KEY,this.checked?'1':'0');}catch(e){}sendHeartbeat(true);$('settingsErr').textContent=this.checked?'Status online ditampilkan.':'Status online disembunyikan.';};
+  $('logoutBtn').onclick=function(){
+    var done=function(){localStorage.removeItem(DEVICE_KEY);location.reload();};
+    Promise.race([sendHeartbeat(false),new Promise(function(r){setTimeout(r,1200);})]).then(done,done);
+  };
+
+  // ===== Notifikasi browser =====
+  var appStart=Date.now();
+  function notifSupported(){return typeof Notification!=='undefined';}
+  function notify(name,text,ts){
+    try{
+      if(!notifSupported()||Notification.permission!=='granted')return;
+      if(!document.hidden)return;
+      if(ts&&ts<appStart-5000)return;
+      var n=new Notification(name,{body:(text||'Pesan baru').slice(0,120),tag:'chatkode-'+name});
+      n.onclick=function(){try{window.focus();}catch(e){}n.close();};
+    }catch(e){}
+  }
+  function updateNotifBtn(){
+    var b=$('notifBtn');if(!b)return;
+    if(!notifSupported()){b.textContent='🔕 Notifikasi tidak didukung';return;}
+    var p=Notification.permission;
+    b.textContent=p==='granted'?'🔔 Notifikasi aktif':(p==='denied'?'🔕 Notifikasi diblokir':'🔔 Aktifkan notifikasi');
+  }
+  $('notifBtn').onclick=function(){
+    if(!notifSupported()){toast('Browser ini tidak mendukung notifikasi.');return;}
+    if(Notification.permission==='granted'){toast('Notifikasi sudah aktif.');return;}
+    if(Notification.permission==='denied'){toast('Diblokir. Ketuk ikon gembok di bilah alamat Chrome → Notifikasi → Izinkan.');return;}
+    try{
+      var r=Notification.requestPermission(function(){});
+      Promise.resolve(r).then(function(p){
+        updateNotifBtn();
+        if(p==='granted'){try{new Notification('Chat Kode',{body:'Notifikasi aktif ✅'});}catch(e){}}
+        else toast('Izin tidak diberikan. Coba buka link artefak langsung di Chrome.');
+      });
+    }catch(e){toast('Izin notifikasi tidak bisa diminta di sini. Buka link artefak langsung di Chrome.');}
+  };
+
+  // ===== Grup (2-10 orang) =====
+  var MAX_GROUP=10, groups={}, gWatchers=[], activeGroup=null;
+  function gLabel(gr,code){if(code===myCode)return 'Kamu';return (curContacts[code]&&curContacts[code].name)||(gr&&gr.names&&gr.names[code])||('Kode '+code);}
+  function gSelected(){return Array.from($('gPick').querySelectorAll('input:checked')).map(function(i){return i.value;});}
+  function gCount(){
+    var n=gSelected().length+1;
+    $('gCount').textContent=n+' / '+MAX_GROUP+' orang (termasuk kamu)';
+    Array.from($('gPick').querySelectorAll('input')).forEach(function(i){i.disabled=!i.checked&&n>=MAX_GROUP;});
+  }
+  function gOpenCreate(){
+    $('gName').value='';$('gBio').value='';$('gErr').textContent='';
+    var box=$('gPick');box.innerHTML='';
+    var codes=Object.keys(curContacts).filter(function(c){return !curContacts[c].blocked;});
+    $('gEmpty').classList.toggle('hidden',codes.length>0);
+    codes.forEach(function(code){
+      var l=document.createElement('label');l.className='toggle pick';
+      l.innerHTML='<input type="checkbox" value="'+esc(code)+'"><span><b>'+esc(curContacts[code].name)+'</b> <small>Kode '+esc(code)+'</small></span>';
+      l.querySelector('input').onchange=gCount;
+      box.appendChild(l);
+    });
+    gCount();
+    $('settingsOverlay').classList.remove('show');$('groupOverlay').classList.add('show');
+  }
+  $('createGroupBtn').onclick=gOpenCreate;
+  $('gCancel').onclick=function(){$('groupOverlay').classList.remove('show');};
+  $('gCreate').onclick=async function(){
+    var name=($('gName').value||'').trim(),bio=($('gBio').value||'').trim(),sel=gSelected();
+    if(!name){$('gErr').textContent='Nama grup wajib diisi.';return;}
+    if(sel.length<1){$('gErr').textContent='Pilih minimal 1 anggota. Grup berisi 2–10 orang.';return;}
+    if(sel.length+1>MAX_GROUP){$('gErr').textContent='Maksimal '+MAX_GROUP+' orang per grup.';return;}
+    var names={};names[myCode]=$('meName').textContent;sel.forEach(function(c){names[c]=curContacts[c].name;});
+    $('gCreate').disabled=true;
+    try{
+      await db.collection('groups').add({name:name.slice(0,40),bio:bio.slice(0,120),owner:myCode,members:[myCode].concat(sel),names:names,createdAt:Date.now()});
+      $('groupOverlay').classList.remove('show');toast('Grup dibuat: '+name);
+    }catch(e){$('gErr').textContent='Gagal membuat grup, coba lagi.';}
+    $('gCreate').disabled=false;
+  };
+  function watchGroups(){
+    db.collection('groups').where('members','array-contains',myCode).onSnapshot(function(qs){
+      groups={};qs.docs.forEach(function(d){groups[d.id]=d.data();});
+      renderGroups();
+      if(activeGroup&&!groups[activeGroup]){gExit('Grup ini sudah dibubarkan atau kamu tidak lagi jadi anggota.');}
+      else if(activeGroup&&$('groupInfoOverlay').classList.contains('show'))gInfoRender();
+    },function(){});
+  }
+  function renderGroups(){
+    gWatchers.forEach(function(u){u();});gWatchers=[];
+    var list=$('groupList');list.innerHTML='';
+    var ids=Object.keys(groups).sort(function(a,b){return (groups[b].createdAt||0)-(groups[a].createdAt||0);});
+    if(!ids.length)return;
+    var h=document.createElement('div');h.className='sect';h.textContent='Grup ('+ids.length+')';list.appendChild(h);
+    ids.forEach(function(id){
+      var gr=groups[id],row=document.createElement('div');row.className='contact';
+      row.innerHTML='<div class="avatar">👥</div><div style="flex:1"><b>'+esc(gr.name)+'</b><br><span>'+gr.members.length+' anggota'+(gr.bio?' · '+esc(gr.bio.slice(0,30)):'')+'</span></div><span class="badge hidden" id="gbadge-'+esc(id)+'">0</span>';
+      row.onclick=function(){openGroup(id);};
+      list.appendChild(row);
+      watchGroupUnread(id);
+    });
+    if(activeGroup){if(groups[activeGroup]){setGroupHeader(activeGroup);if($('groupInfoOverlay').classList.contains('show'))giRender();}else closeGroupChat('Grup ini sudah tidak ada untukmu.');}
+  }
+  function watchGroupUnread(id){
+    var key='g_'+id;
+    var u=db.collection('groups/'+id+'/messages').orderBy('ts','desc').limit(1).onSnapshot(function(qs){
+      if(qs.empty)return;
+      var d=qs.docs[0],m=d.data();
+      if(m.from===myCode)return;
+      var gr=groups[id]||{},badge=$('gbadge-'+id),who=gLabel(gr,m.from);
+      if(m.ts>(lastSeen[key]||0)){
+        if(activeGroup===id){lastSeen[key]=m.ts;saveSeen();if(badge)badge.classList.add('hidden');if(lastMsgId[key]!==d.id)notify(gr.name,who+': '+m.text,m.ts);}
+        else{
+          if(badge){badge.textContent='•';badge.classList.remove('hidden');}
+          if(lastMsgId[key]!==d.id){toast((gr.name||'Grup')+' · '+who+': '+(m.text||'').slice(0,50));notify(gr.name,who+': '+m.text,m.ts);}
+        }
+      }
+      lastMsgId[key]=d.id;
+    },function(){});
+    gWatchers.push(u);
+  }
+  function setGroupHeader(id){var gr=groups[id];$('chatName').textContent=gr.name;$('chatCode').textContent=gr.members.length+' anggota'+(gr.bio?' · '+gr.bio.slice(0,40):'');}
+  function openGroup(id){
+    var gr=groups[id];if(!gr)return;
+    activeGroup=id;activeChatCode='g:'+id;
+    $('chatAvatar').textContent='👥';setGroupHeader(id);$('addMemberBtn').classList.remove('hidden');$('chatAvatar').style.cursor='pointer';
+    show('chatScreen');
+    var box=$('msgs'),key='g_'+id,delArm=null;
+    box.innerHTML='<p class="empty">Memuat pesan...</p>';
+    if(chatUnsub)chatUnsub();
+    chatUnsub=db.collection('groups/'+id+'/messages').orderBy('ts','asc').limit(300).onSnapshot(function(qs){
+      box.innerHTML='';
+      if(qs.empty)box.innerHTML='<p class="empty">Belum ada pesan di grup ini. Mulai obrolan!</p>';
+      var lastTs=0,inTs=0;
+      qs.docs.forEach(function(d){
+        var m=d.data();if(m.ts>lastTs)lastTs=m.ts;
+        var mine=m.from===myCode,b=document.createElement('div');
+        if(!mine&&m.ts>inTs)inTs=m.ts;
+        b.className='bub '+(mine?'me':'them');
+        var t=m.ts?new Date(m.ts).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'';
+        if(!mine){var w=document.createElement('b');w.className='who';w.textContent=gLabel(groups[id],m.from);b.appendChild(w);}
+        b.appendChild(document.createTextNode(m.text||''));
+        if(mine){b.dataset.ts=m.ts;b.appendChild(metaEl(d.id,t,isRead(m,gOthers(id)),function(x){db.collection('groups/'+id+'/messages').doc(x).delete().catch(function(){});}));}
+        else b.appendChild(tsEl(t));
+        box.appendChild(b);
+      });
+      if(lastTs){lastSeen[key]=Math.max(lastSeen[key]||0,lastTs);saveSeen();}
+      markRead(key,inTs);
+      var bd=$('gbadge-'+id);if(bd)bd.classList.add('hidden');
+      box.scrollTop=box.scrollHeight;
+    },function(){box.innerHTML='<p class="empty">Gagal memuat pesan.</p>';});
+    watchReads(key,function(){return gOthers(id);});
+    $('msgInput').onkeydown=function(e){if(e.key==='Enter')sendGroupMsg(id);};
+    $('sendBtn').onclick=function(){sendGroupMsg(id);};
+  }
+  async function sendGroupMsg(id){
+    var text=($('msgInput').value||'').trim();
+    if(!text)return;
+    $('msgInput').value='';
+    try{await db.collection('groups/'+id+'/messages').add({from:myCode,text:text.slice(0,2000),ts:Date.now()});}
+    catch(e){$('msgInput').value=text;}
+  }
+
+  // ===== Centang baca + tombol hapus pesan =====
+  var readMap={},readUnsub=null,pendingRead=null,markedTs={},armedMsg=null,armT=null;
+  function gOthers(id){var g=groups[id];return g?g.members.filter(function(c){return c!==myCode;}):[];}
+  function isRead(m,others){return others.length>0&&others.every(function(c){return (readMap[c]||0)>=m.ts;});}
+  function refreshChecks(others){
+    document.querySelectorAll('#msgs .bub.me[data-ts]').forEach(function(b){
+      var ts=+b.dataset.ts,rd=others.length>0&&others.every(function(c){return (readMap[c]||0)>=ts;});
+      var ck=b.querySelector('.chk');if(!ck)return;
+      ck.className='chk'+(rd?' rd':'');ck.textContent=rd?'✓✓':'✓';ck.title=rd?'Sudah dibaca':'Terkirim';
+    });
+  }
+  function watchReads(cid,getOthers){
+    if(readUnsub){readUnsub();readUnsub=null;}
+    readMap={};
+    readUnsub=db.collection('reads').where('chat','==',cid).onSnapshot(function(qs){
+      readMap={};
+      qs.docs.forEach(function(d){var r=d.data();if(r&&r.code)readMap[r.code]=r.ts||0;});
+      refreshChecks(getOthers());
+    },function(){});
+  }
+  function flushRead(){
+    if(!pendingRead||document.hidden)return;
+    var p=pendingRead;pendingRead=null;
+    if((markedTs[p.cid]||0)>=p.ts)return;
+    markedTs[p.cid]=p.ts;
+    db.doc('reads/'+p.cid+'__'+myCode).set({chat:p.cid,code:myCode,ts:p.ts}).catch(function(){});
+  }
+  function markRead(cid,ts){if(!ts)return;pendingRead={cid:cid,ts:ts};flushRead();}
+  document.addEventListener('visibilitychange',flushRead);
+  function tsEl(t){var s=document.createElement('span');s.className='ts';s.textContent=t;return s;}
+  function metaEl(id,t,rd,delFn){
+    var s=document.createElement('span');s.className='ts meta';
+    var tm=document.createElement('span');tm.textContent=t;s.appendChild(tm);
+    var del=document.createElement('button');del.type='button';
+    del.className='delb'+(armedMsg===id?' armed':'');del.textContent=armedMsg===id?'Hapus?':'🗑';
+    del.setAttribute('aria-label','Hapus pesan');
+    del.onclick=function(e){
+      e.stopPropagation();
+      if(armedMsg===id){clearTimeout(armT);armedMsg=null;delFn(id);}
+      else{
+        armedMsg=id;del.className='delb armed';del.textContent='Hapus?';
+        clearTimeout(armT);
+        armT=setTimeout(function(){armedMsg=null;document.querySelectorAll('.delb.armed').forEach(function(x){x.className='delb';x.textContent='🗑';});},15000);
+      }
+    };
+    s.appendChild(del);
+    var ck=document.createElement('span');ck.className='chk'+(rd?' rd':'');
+    ck.textContent=rd?'✓✓':'✓';ck.title=rd?'Sudah dibaca':'Terkirim';
+    s.appendChild(ck);
+    return s;
+  }
+
+  // ===== Info grup: bio, ganti nama, keluar, bubarkan =====
+  function closeGroupChat(msg){
+    if(!activeGroup&&$('chatScreen').classList.contains('hidden'))return;
+    activeGroup=null;activeChatCode=null;pendingRead=null;if(readUnsub){readUnsub();readUnsub=null;}
+    $('addMemberBtn').classList.add('hidden');
+    $('groupInfoOverlay').classList.remove('show');$('addMemberOverlay').classList.remove('show');
+    show('appScreen');if(msg)toast(msg);
+  }
+  function giRender(){
+    var gr=groups[activeGroup];if(!gr)return;
+    var owner=gr.owner===myCode;
+    $('giName').textContent=gr.name;
+    $('giCount').textContent=gr.members.length+' dari '+MAX_GROUP+' anggota';
+    $('giBio').textContent=gr.bio?gr.bio:'Tidak ada bio.';
+    var mbox=$('giMembers');mbox.innerHTML='';
+    gr.members.forEach(function(c){
+      var on=c===myCode||isOnline(c),row=document.createElement('div');row.className='gmrow';
+      var dot=document.createElement('span');dot.className='dot2'+(on?' on':'');
+      var nm=document.createElement('span');nm.className='gmn';nm.textContent=c===myCode?'Kamu':gLabel(gr,c);
+      var tag=document.createElement('span');tag.className='gmt';tag.textContent=(c===gr.owner?'Pembuat · ':'')+(on?'Online':'Offline');
+      row.appendChild(dot);row.appendChild(nm);row.appendChild(tag);mbox.appendChild(row);
+    });
+    $('giRename').classList.toggle('hidden',!owner);
+    $('giDisband').classList.toggle('hidden',!owner);
+  }
+  function giOpen(){
+    if(!activeGroup||!groups[activeGroup])return;
+    $('giErr').textContent='';$('giEdit').classList.add('hidden');$('giView').classList.remove('hidden');
+    giRender();$('groupInfoOverlay').classList.add('show');
+  }
+  function arm(btn,txt,fn){
+    if(btn.dataset.arm){clearTimeout(btn._t);btn.textContent=btn.dataset.orig;delete btn.dataset.arm;fn();return;}
+    btn.dataset.arm='1';btn.dataset.orig=btn.textContent;btn.textContent='Ketuk lagi untuk '+txt;
+    btn._t=setTimeout(function(){if(btn.dataset.arm){btn.textContent=btn.dataset.orig;delete btn.dataset.arm;}},3000);
+  }
+  async function leaveGroup(){
+    var id=activeGroup,gr=groups[id];if(!gr)return;
+    var rest=gr.members.filter(function(c){return c!==myCode;});
+    try{
+      if(!rest.length){await db.doc('groups/'+id).delete();}
+      else{
+        var names=Object.assign({},gr.names||{});delete names[myCode];
+        await db.doc('groups/'+id).update({members:rest,names:names,owner:gr.owner===myCode?rest[0]:gr.owner});
+      }
+      closeGroupChat('Kamu keluar dari grup.');
+    }catch(e){$('giErr').textContent='Gagal keluar dari grup, coba lagi.';}
+  }
+  async function disbandGroup(){
+    var id=activeGroup,gr=groups[id];if(!gr||gr.owner!==myCode)return;
+    try{
+      try{
+        var ms=await db.collection('groups/'+id+'/messages').get();
+        await Promise.all(ms.docs.map(function(d){return db.collection('groups/'+id+'/messages').doc(d.id).delete();}));
+      }catch(e){}
+      await db.doc('groups/'+id).delete();
+      closeGroupChat('Grup dibubarkan.');
+    }catch(e){$('giErr').textContent='Gagal membubarkan grup, coba lagi.';}
+  }
+  $('chatAvatar').onclick=function(){if(activeGroup)giOpen();};
+  $('giClose').onclick=function(){$('groupInfoOverlay').classList.remove('show');};
+  $('giRename').onclick=function(){
+    var gr=groups[activeGroup];if(!gr||gr.owner!==myCode)return;
+    $('giNameInput').value=gr.name;$('giErr').textContent='';
+    $('giView').classList.add('hidden');$('giEdit').classList.remove('hidden');
+    setTimeout(function(){$('giNameInput').focus();$('giNameInput').select();},50);
+  };
+  $('giEditCancel').onclick=function(){$('giEdit').classList.add('hidden');$('giView').classList.remove('hidden');};
+  $('giEditSave').onclick=async function(){
+    var gr=groups[activeGroup],n=($('giNameInput').value||'').trim();
+    if(!gr||gr.owner!==myCode)return;
+    if(!n){$('giErr').textContent='Nama grup tidak boleh kosong.';return;}
+    $('giEditSave').disabled=true;
+    try{
+      await db.doc('groups/'+activeGroup).update({name:n.slice(0,40)});
+      $('giEdit').classList.add('hidden');$('giView').classList.remove('hidden');toast('Nama grup diganti.');
+    }catch(e){$('giErr').textContent='Gagal mengganti nama, coba lagi.';}
+    $('giEditSave').disabled=false;
+  };
+  $('giLeave').onclick=function(){arm($('giLeave'),'keluar',leaveGroup);};
+  $('giDisband').onclick=function(){arm($('giDisband'),'bubarkan',disbandGroup);};
+
+  // ===== Tambah anggota ke grup (ikon oren di pojok kanan) =====
+  function amOpen(){
+    var gr=groups[activeGroup];if(!gr)return;
+    var left=MAX_GROUP-gr.members.length;
+    if(left<=0){toast('Grup sudah penuh (maksimal '+MAX_GROUP+' orang).');return;}
+    $('amErr').textContent='';
+    var box=$('amList');box.innerHTML='';
+    var codes=Object.keys(curContacts).filter(function(c){return !curContacts[c].blocked&&gr.members.indexOf(c)<0;});
+    $('amEmpty').classList.toggle('hidden',codes.length>0);
+    function upd(){
+      var n=box.querySelectorAll('input:checked').length;
+      $('amCount').textContent='Dipilih '+n+' · sisa slot '+(left-n);
+      Array.from(box.querySelectorAll('input')).forEach(function(i){i.disabled=!i.checked&&n>=left;});
+    }
+    codes.forEach(function(code){
+      var l=document.createElement('label');l.className='toggle pick';
+      l.innerHTML='<input type="checkbox" value="'+esc(code)+'"><span><b>'+esc(curContacts[code].name)+'</b> <small>Kode '+esc(code)+'</small></span>';
+      l.querySelector('input').onchange=upd;
+      box.appendChild(l);
+    });
+    upd();$('addMemberOverlay').classList.add('show');
+  }
+  $('addMemberBtn').onclick=amOpen;
+  $('amCancel').onclick=function(){$('addMemberOverlay').classList.remove('show');};
+  $('amAdd').onclick=async function(){
+    var gr=groups[activeGroup];if(!gr)return;
+    var sel=Array.from($('amList').querySelectorAll('input:checked')).map(function(i){return i.value;});
+    if(!sel.length){$('amErr').textContent='Pilih minimal 1 kontak.';return;}
+    if(gr.members.length+sel.length>MAX_GROUP){$('amErr').textContent='Maksimal '+MAX_GROUP+' orang per grup.';return;}
+    var names=Object.assign({},gr.names||{});sel.forEach(function(c){names[c]=curContacts[c].name;});
+    $('amAdd').disabled=true;
+    try{
+      await db.doc('groups/'+activeGroup).update({members:gr.members.concat(sel),names:names});
+      $('addMemberOverlay').classList.remove('show');toast(sel.length+' anggota ditambahkan.');
+    }catch(e){$('amErr').textContent='Gagal menambah anggota, coba lagi.';}
+    $('amAdd').disabled=false;
+  };
+
+  // ===== Info grup: ganti nama, keluar, bubarkan =====
+  function gInfoRender(){
+    var gr=groups[activeGroup];if(!gr)return;
+    var owner=gr.owner===myCode;
+    $('giName').textContent=gr.name;
+    $('giMeta').textContent=gr.members.length+' anggota';
+    $('giBio').textContent=gr.bio||'Belum ada bio.';
+    $('giRename').classList.toggle('hidden',!owner);
+    if(document.activeElement!==$('giNameInput'))$('giNameInput').value=gr.name;
+    $('giDissolve').classList.toggle('hidden',!owner);
+    var box=$('giMembers');box.innerHTML='';
+    gr.members.forEach(function(c){var r=document.createElement('div');r.className='nkrow';r.textContent=gLabel(gr,c)+(c===gr.owner?' · pembuat grup':'');box.appendChild(r);});
+  }
+  function gInfoOpen(){
+    if(!activeGroup||!groups[activeGroup])return;
+    $('giErr').textContent='';$('giNameInput').value=groups[activeGroup].name;
+    gInfoRender();$('groupInfoOverlay').classList.add('show');
+  }
+  function gExit(msg){
+    $('groupInfoOverlay').classList.remove('show');
+    if(chatUnsub){chatUnsub();chatUnsub=null;}
+    activeGroup=null;activeChatCode=null;$('addMemberBtn').classList.add('hidden');
+    show('appScreen');toast(msg);
+  }
+  function confirmTap(btn,orig,armed,run){
+    if(btn.dataset.armed){btn.dataset.armed='';btn.textContent=orig;run();return;}
+    btn.dataset.armed='1';btn.textContent=armed;
+    setTimeout(function(){if(btn.dataset.armed){btn.dataset.armed='';btn.textContent=orig;}},3000);
+  }
+  async function gLeave(){
+    var id=activeGroup,gr=groups[id];if(!gr)return;
+    var rest=gr.members.filter(function(c){return c!==myCode;});
+    try{
+      if(!rest.length){await db.doc('groups/'+id).delete();}
+      else{
+        var names=Object.assign({},gr.names||{});delete names[myCode];
+        await db.doc('groups/'+id).update({members:rest,names:names,owner:gr.owner===myCode?rest[0]:gr.owner});
+      }
+      gExit('Kamu keluar dari grup.');
+    }catch(e){$('giErr').textContent='Gagal keluar dari grup, coba lagi.';}
+  }
+  async function gDissolve(){
+    var id=activeGroup,gr=groups[id];if(!gr||gr.owner!==myCode)return;
+    try{
+      try{var qs=await db.collection('groups/'+id+'/messages').get();await Promise.all(qs.docs.map(function(d){return db.collection('groups/'+id+'/messages').doc(d.id).delete();}));}catch(e){}
+      await db.doc('groups/'+id).delete();
+      gExit('Grup dibubarkan.');
+    }catch(e){$('giErr').textContent='Gagal membubarkan grup, coba lagi.';}
+  }
+  $('chatAvatar').onclick=function(){if(activeGroup)gInfoOpen();};
+  $('giClose').onclick=function(){$('groupInfoOverlay').classList.remove('show');};
+  $('giLeave').onclick=function(){confirmTap(this,'🚪 Keluar dari grup','Ketuk lagi untuk keluar',gLeave);};
+  $('giDissolve').onclick=function(){confirmTap(this,'🗑 Bubarkan grup','Ketuk lagi untuk membubarkan',gDissolve);};
+  $('giSaveName').onclick=async function(){
+    var gr=groups[activeGroup];if(!gr||gr.owner!==myCode)return;
+    var n=($('giNameInput').value||'').trim();
+    if(!n){$('giErr').textContent='Nama grup tidak boleh kosong.';return;}
+    try{await db.doc('groups/'+activeGroup).update({name:n.slice(0,40)});$('giErr').textContent='';toast('Nama grup diganti.');}
+    catch(e){$('giErr').textContent='Gagal mengganti nama, coba lagi.';}
+  };
+
+  // ===== Ubah nama teman (dari Pengaturan) =====
+  var frCode=null;
+  function frShowList(){
+    frCode=null;$('frEdit').classList.add('hidden');$('frPick').classList.remove('hidden');
+    var list=$('frList');list.innerHTML='';
+    var codes=Object.keys(curContacts);
+    $('frEmpty').classList.toggle('hidden',codes.length>0);
+    codes.forEach(function(code){
+      var c=curContacts[code];
+      var row=document.createElement('div');row.className='contact';
+      row.innerHTML='<div class="avatar">'+esc(initials(c.name))+'</div><div style="flex:1"><b>'+esc(c.name)+'</b><br><span>Kode '+esc(code)+(c.blocked?' · diblokir':'')+'</span></div><span>›</span>';
+      row.onclick=function(){
+        frCode=code;$('frWho').textContent=c.name;$('frName').value=c.name;$('frErr').textContent='';
+        $('frPick').classList.add('hidden');$('frEdit').classList.remove('hidden');
+        setTimeout(function(){$('frName').focus();$('frName').select();},50);
+      };
+      list.appendChild(row);
+    });
+  }
+  $('renameFriendBtn').onclick=function(){$('settingsOverlay').classList.remove('show');frShowList();$('friendRenameOverlay').classList.add('show');};
+  $('frClose').onclick=function(){$('friendRenameOverlay').classList.remove('show');};
+  $('frBack').onclick=frShowList;
+  $('frSave').onclick=function(){
+    var n=($('frName').value||'').trim();
+    if(!frCode)return;
+    if(!n){$('frErr').textContent='Nama tidak boleh kosong.';return;}
+    var code=frCode;
+    myProfileDoc().collection('contacts').doc(code).update({name:n}).then(function(){
+      shareNick(code,n);
+      toast('Nama teman disimpan: '+n);
+      frShowList();
+    }).catch(function(){$('frErr').textContent='Gagal menyimpan, coba lagi.';});
+  };
+
+  boot();
+})();
+</script>
+</body>
+</html>
